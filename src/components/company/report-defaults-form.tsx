@@ -8,6 +8,7 @@ type ReportDefaultsValues = {
   relatorio_prazo_padrao?: string | null;
   relatorio_condicoes_pagamento_padrao?: string | null;
   relatorio_consideracoes_finais_padrao?: string | null;
+  relatorio_validade_padrao?: string | null;
 };
 
 export function ReportDefaultsForm({
@@ -66,6 +67,17 @@ export function ReportDefaultsForm({
           rows={3}
           placeholder="Ex: Ao término dos serviços, o local será entregue reparado e com acabamento adequado."
           defaultValue={defaultValues?.relatorio_consideracoes_finais_padrao ?? ""}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="relatorio_validade_padrao">Validade da proposta</Label>
+        <Textarea
+          id="relatorio_validade_padrao"
+          name="relatorio_validade_padrao"
+          rows={2}
+          placeholder="Ex: Esta proposta tem validade de 15 (quinze) dias, contados a partir da data de envio."
+          defaultValue={defaultValues?.relatorio_validade_padrao ?? ""}
         />
       </div>
 

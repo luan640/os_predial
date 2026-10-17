@@ -1,14 +1,21 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Building2, CircleDollarSign, Users, AlertTriangle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 import { requireCompanyId } from "@/lib/queries/company";
 import { formatCurrencyBRL } from "@/lib/format";
-import { StatusDonut } from "@/components/dashboard/status-donut";
-import { BudgetBarChart } from "@/components/dashboard/budget-bar-chart";
+import { KpiCard, type KpiTrend } from "@/components/dashboard/kpi-card";
 import { isBudgetOverdue, type BudgetStatus } from "@/lib/budget-status";
 
 const ACTIVE_STATUSES = ["enviado", "aprovado", "em_andamento"];
+
+function trendFromCounts(now: number, before: number): KpiTrend {
+  if (before === 0) return now === 0 ? null : { percent: 100, direction: "up" };
+  const percent = Math.round(((now - before) / before) * 100);
+  if (percent === 0) return null;
+  return { percent: Math.abs(percent), direction: percent > 0 ? "up" : "down" };
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -19,57 +26,30 @@ export default async function DashboardPage() {
 
   const companyId = await requireCompanyId(supabase, user.id);
 
-  const [{ data: budgets }, { count: clientsCount }, { count: workersCount }] = await Promise.all([
+  const currentMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+
+  const [{ data: budgets }, { data: clients }] = await Promise.all([
     supabase
       .from("budgets")
-      .select("id, titulo, status, valor_total, data_previsao_entrega")
+      .select("id, titulo, status, valor_total, data_previsao_entrega, created_at")
       .eq("company_id", companyId),
-    supabase.from("clients").select("id", { count: "exact", head: true }).eq("company_id", companyId),
-    supabase.from("workers").select("id", { count: "exact", head: true }).eq("company_id", companyId),
+    supabase.from("clients").select("id, created_at").eq("company_id", companyId),
   ]);
 
   const allBudgets = budgets ?? [];
+  const allClients = clients ?? [];
+
   const activeBudgets = allBudgets.filter((b) => ACTIVE_STATUSES.includes(b.status));
   const activeValorTotal = activeBudgets.reduce((sum, b) => sum + Number(b.valor_total), 0);
+
+  const activeBudgetsBefore = activeBudgets.filter((b) => b.created_at < currentMonthStart);
+  const activeValorTotalBefore = activeBudgetsBefore.reduce((sum, b) => sum + Number(b.valor_total), 0);
+  const clientsBefore = allClients.filter((c) => c.created_at < currentMonthStart).length;
 
   const overdueBudgets = allBudgets.filter((b) =>
     isBudgetOverdue(b.status as BudgetStatus, b.data_previsao_entrega),
   );
-  const overdueIds = new Set(overdueBudgets.map((b) => b.id));
-
-  const statusData = [
-    {
-      key: "pendente" as const,
-      label: "Rascunho / aguardando",
-      value: allBudgets.filter(
-        (b) => ["rascunho", "enviado", "aprovado"].includes(b.status) && !overdueIds.has(b.id),
-      ).length,
-    },
-    {
-      key: "emAndamento" as const,
-      label: "Em andamento",
-      value: allBudgets.filter((b) => b.status === "em_andamento" && !overdueIds.has(b.id)).length,
-    },
-    {
-      key: "concluido" as const,
-      label: "Concluído",
-      value: allBudgets.filter((b) => b.status === "concluido").length,
-    },
-    {
-      key: "atrasado" as const,
-      label: "Atrasado",
-      value: overdueBudgets.length,
-    },
-  ];
-
-  const barData = activeBudgets
-    .slice()
-    .sort((a, b) => Number(b.valor_total) - Number(a.valor_total))
-    .slice(0, 6)
-    .map((b) => ({
-      titulo: b.titulo,
-      orcado: Number(b.valor_total),
-    }));
+  const overdueBudgetsBefore = overdueBudgets.filter((b) => b.created_at < currentMonthStart);
 
   return (
     <div className="flex flex-col gap-6">
@@ -79,54 +59,39 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card>
-          <CardContent className="py-4">
-            <p className="text-xs text-muted-foreground">Orçamentos ativos</p>
-            <p className="text-2xl font-semibold text-foreground">{activeBudgets.length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="py-4">
-            <p className="text-xs text-muted-foreground">Valor em obras ativas</p>
-            <p className="text-2xl font-semibold tabular-nums text-foreground">
-              {formatCurrencyBRL(activeValorTotal)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="py-4">
-            <p className="text-xs text-muted-foreground">Clientes cadastrados</p>
-            <p className="text-2xl font-semibold text-foreground">{clientsCount ?? 0}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="py-4">
-            <p className="text-xs text-muted-foreground">Operadores</p>
-            <p className="text-2xl font-semibold text-foreground">{workersCount ?? 0}</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Orçamentos por status</CardTitle>
-            <CardDescription>Distribuição de todas as obras cadastradas.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <StatusDonut data={statusData} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Maiores orçamentos ativos</CardTitle>
-            <CardDescription>Obras ativas com maior valor orçado.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <BudgetBarChart data={barData} />
-          </CardContent>
-        </Card>
+        <KpiCard
+          icon={Building2}
+          accent="chart-1"
+          label="Orçamentos ativos"
+          value={String(activeBudgets.length)}
+          trend={trendFromCounts(activeBudgets.length, activeBudgetsBefore.length)}
+          comparisonText={`de ${activeBudgetsBefore.length} no mês anterior`}
+        />
+        <KpiCard
+          icon={CircleDollarSign}
+          accent="chart-3"
+          label="Valor em obras ativas"
+          value={formatCurrencyBRL(activeValorTotal)}
+          trend={trendFromCounts(activeValorTotal, activeValorTotalBefore)}
+          comparisonText={`vs ${formatCurrencyBRL(activeValorTotalBefore)} anterior`}
+        />
+        <KpiCard
+          icon={Users}
+          accent="chart-2"
+          label="Clientes cadastrados"
+          value={String(allClients.length)}
+          trend={trendFromCounts(allClients.length, clientsBefore)}
+          comparisonText={`de ${clientsBefore} no mês anterior`}
+        />
+        <KpiCard
+          icon={AlertTriangle}
+          accent="chart-5"
+          label="Orçamentos em atraso"
+          value={String(overdueBudgets.length)}
+          trend={trendFromCounts(overdueBudgets.length, overdueBudgetsBefore.length)}
+          comparisonText={`de ${overdueBudgetsBefore.length} no mês anterior`}
+          invertTrendColors
+        />
       </div>
 
       {allBudgets.length === 0 && (

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useActionState, useEffect, useState, useTransition } from "react";
+import { Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,12 +40,73 @@ import {
 } from "@/components/ui/combobox";
 import { BUDGET_ITEM_TYPES } from "@/lib/budget-status";
 import { useIsMobile } from "@/lib/use-is-mobile";
+import { createMaterialInlineAction } from "@/lib/actions/materials";
 
 type Material = {
   id: string;
   nome: string;
   unidade: string | null;
 };
+
+function NewMaterialInlineForm({
+  defaultNome,
+  onCreated,
+  onCancel,
+}: {
+  defaultNome: string;
+  onCreated: (material: Material) => void;
+  onCancel: () => void;
+}) {
+  const [state, formAction] = useActionState(createMaterialInlineAction, null);
+  const [isPending, startTransition] = useTransition();
+  const [nome, setNome] = useState(defaultNome);
+  const [unidade, setUnidade] = useState("");
+
+  useEffect(() => {
+    if (state?.material) {
+      onCreated(state.material);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to the action result
+  }, [state]);
+
+  function handleSave() {
+    const formData = new FormData();
+    formData.set("nome", nome);
+    formData.set("unidade", unidade);
+    startTransition(() => {
+      formAction(formData);
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-border p-3">
+      <p className="text-xs font-medium text-foreground">Novo material</p>
+      <Input
+        placeholder="Nome do material"
+        value={nome}
+        onChange={(e) => setNome(e.target.value)}
+        className="h-8 text-sm"
+        autoFocus
+      />
+      <Input
+        placeholder="Unidade (ex: saco, m², kg)"
+        value={unidade}
+        onChange={(e) => setUnidade(e.target.value)}
+        className="h-8 text-sm"
+      />
+      {state?.error && <p className="text-xs text-destructive">{state.error}</p>}
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button type="button" size="sm" disabled={isPending || !nome.trim()} onClick={handleSave}>
+          {isPending && <Loader2 className="size-3.5 animate-spin" />}
+          Salvar material
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export function AddItemDialog({
   createAction,
@@ -64,20 +125,32 @@ export function AddItemDialog({
   const [descricao, setDescricao] = useState("");
   const [unidade, setUnidade] = useState("");
 
-  const materialItems = createComboboxItems(materials, {
+  const [localMaterials, setLocalMaterials] = useState(materials);
+  const [materialQuery, setMaterialQuery] = useState("");
+  const [creatingMaterial, setCreatingMaterial] = useState(false);
+
+  const materialItems = createComboboxItems(localMaterials, {
     getValue: (material) => material.id,
     getLabel: (material) => material.nome,
   });
 
   function handleMaterialSelect(materialId: string | null) {
-    const material = materials.find((m) => m.id === materialId);
+    const material = localMaterials.find((m) => m.id === materialId);
     if (material) {
       setDescricao(material.nome);
       setUnidade(material.unidade ?? "");
     }
   }
 
-  const showCatalog = tipo === "material" && materials.length > 0;
+  function handleMaterialCreated(material: Material) {
+    setLocalMaterials((prev) => [...prev, material].sort((a, b) => a.nome.localeCompare(b.nome)));
+    setDescricao(material.nome);
+    setUnidade(material.unidade ?? "");
+    setCreatingMaterial(false);
+    setMaterialQuery("");
+  }
+
+  const showCatalog = tipo === "material";
 
   const form = (
     <form action={createAction} className="flex flex-col gap-3">
@@ -105,23 +178,46 @@ export function AddItemDialog({
       {showCatalog && (
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="material_catalogo" className="text-xs">Material cadastrado</Label>
-          <Combobox
-            items={materialItems}
-            required
-            onValueChange={(value) => handleMaterialSelect(value as string | null)}
-          >
-            <ComboboxInputGroup>
-              <ComboboxInput id="material_catalogo" placeholder="Buscar material..." />
-              <ComboboxTrigger />
-            </ComboboxInputGroup>
-            <ComboboxContent>
-              {(material: Material) => (
-                <ComboboxItem key={material.id} value={material.id}>
-                  {material.nome}
-                </ComboboxItem>
-              )}
-            </ComboboxContent>
-          </Combobox>
+
+          {creatingMaterial ? (
+            <NewMaterialInlineForm
+              defaultNome={materialQuery}
+              onCreated={handleMaterialCreated}
+              onCancel={() => setCreatingMaterial(false)}
+            />
+          ) : (
+            <Combobox
+              items={materialItems}
+              required
+              inputValue={materialQuery}
+              onInputValueChange={(value) => setMaterialQuery(value as string)}
+              onValueChange={(value) => handleMaterialSelect(value as string | null)}
+            >
+              <ComboboxInputGroup>
+                <ComboboxInput id="material_catalogo" placeholder="Buscar material..." />
+                <ComboboxTrigger />
+              </ComboboxInputGroup>
+              <ComboboxContent
+                footer={
+                  <button
+                    type="button"
+                    onClick={() => setCreatingMaterial(true)}
+                    className="flex w-full items-center gap-1.5 rounded-md px-1.5 py-1.5 text-left text-sm text-foreground hover:bg-accent"
+                  >
+                    <Plus className="size-3.5" />
+                    {materialQuery ? `Adicionar "${materialQuery}"` : "Adicionar material"}
+                  </button>
+                }
+              >
+                {(material: Material) => (
+                  <ComboboxItem key={material.id} value={material.id}>
+                    {material.nome}
+                  </ComboboxItem>
+                )}
+              </ComboboxContent>
+            </Combobox>
+          )}
+
           <input type="hidden" name="descricao" value={descricao} />
         </div>
       )}

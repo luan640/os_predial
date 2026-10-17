@@ -22,6 +22,7 @@ export async function updateReportDefaultsAction(formData: FormData) {
         (formData.get("relatorio_condicoes_pagamento_padrao") as string)?.trim() || null,
       relatorio_consideracoes_finais_padrao:
         (formData.get("relatorio_consideracoes_finais_padrao") as string)?.trim() || null,
+      relatorio_validade_padrao: (formData.get("relatorio_validade_padrao") as string)?.trim() || null,
     })
     .eq("owner_id", user.id);
 

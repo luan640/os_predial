@@ -93,6 +93,7 @@ export type ReportPdfData = {
     relatorio_prazo_padrao?: string | null;
     relatorio_condicoes_pagamento_padrao?: string | null;
     relatorio_consideracoes_finais_padrao?: string | null;
+    relatorio_validade_padrao?: string | null;
   };
   client: { nome: string; contato_nome?: string | null };
   budget: {
@@ -257,8 +258,8 @@ export function ReportDocument({
         )}
 
         <Text style={styles.validity}>
-          Esta proposta tem validade de 15 (quinze) dias, contados a partir da data de envio, após esta
-          data estará sujeita a alterações e reajustes.
+          {company.relatorio_validade_padrao ||
+            "Esta proposta tem validade de 15 (quinze) dias, contados a partir da data de envio, após esta data estará sujeita a alterações e reajustes."}
         </Text>
 
         <View style={styles.signatureRow}>

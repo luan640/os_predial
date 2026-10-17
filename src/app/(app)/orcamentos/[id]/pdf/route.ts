@@ -22,7 +22,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const { data: company } = await supabase
     .from("companies")
     .select(
-      "nome, cidade, responsavel_tecnico_nome, responsavel_tecnico_cargo, responsavel_tecnico_telefone, relatorio_seguranca_padrao, relatorio_prazo_padrao, relatorio_condicoes_pagamento_padrao, relatorio_consideracoes_finais_padrao",
+      "nome, cidade, responsavel_tecnico_nome, responsavel_tecnico_cargo, responsavel_tecnico_telefone, relatorio_seguranca_padrao, relatorio_prazo_padrao, relatorio_condicoes_pagamento_padrao, relatorio_consideracoes_finais_padrao, relatorio_validade_padrao",
     )
     .eq("id", companyId)
     .single();

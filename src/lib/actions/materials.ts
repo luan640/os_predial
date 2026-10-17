@@ -18,6 +18,22 @@ function parseMaterialForm(formData: FormData) {
   });
 }
 
+function normalizeMaterialKey(nome: string, unidade: string | null | undefined) {
+  return `${nome.trim().toLowerCase()}__${(unidade ?? "").trim().toLowerCase()}`;
+}
+
+async function hasDuplicateMaterial(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  companyId: string,
+  nome: string,
+  unidade: string | null,
+  excludeId?: string,
+) {
+  const { data } = await supabase.from("materials").select("id, nome, unidade").eq("company_id", companyId);
+  const key = normalizeMaterialKey(nome, unidade);
+  return (data ?? []).some((m) => m.id !== excludeId && normalizeMaterialKey(m.nome, m.unidade) === key);
+}
+
 export async function createMaterialAction(formData: FormData) {
   const parsed = parseMaterialForm(formData);
 
@@ -32,11 +48,16 @@ export async function createMaterialAction(formData: FormData) {
   if (!user) redirect("/login");
 
   const companyId = await requireCompanyId(supabase, user.id);
+  const unidade = parsed.data.unidade || null;
+
+  if (await hasDuplicateMaterial(supabase, companyId, parsed.data.nome, unidade)) {
+    redirect(`/materiais?novo=1&error=${encodeURIComponent("Já existe um material com esse nome e unidade.")}`);
+  }
 
   const { error } = await supabase.from("materials").insert({
     company_id: companyId,
     nome: parsed.data.nome,
-    unidade: parsed.data.unidade || null,
+    unidade,
   });
 
   if (error) {
@@ -45,6 +66,52 @@ export async function createMaterialAction(formData: FormData) {
 
   revalidatePath("/materiais");
   redirect(`/materiais?message=${encodeURIComponent("Material criado.")}`);
+}
+
+export type CreateMaterialInlineState = {
+  material?: { id: string; nome: string; unidade: string | null };
+  error?: string;
+} | null;
+
+export async function createMaterialInlineAction(
+  _prevState: CreateMaterialInlineState,
+  formData: FormData,
+): Promise<CreateMaterialInlineState> {
+  const parsed = parseMaterialForm(formData);
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sessão expirada. Atualize a página e tente novamente." };
+
+  const companyId = await requireCompanyId(supabase, user.id);
+  const unidade = parsed.data.unidade || null;
+
+  if (await hasDuplicateMaterial(supabase, companyId, parsed.data.nome, unidade)) {
+    return { error: "Já existe um material com esse nome e unidade." };
+  }
+
+  const { data, error } = await supabase
+    .from("materials")
+    .insert({
+      company_id: companyId,
+      nome: parsed.data.nome,
+      unidade,
+    })
+    .select("id, nome, unidade")
+    .single();
+
+  if (error || !data) {
+    return { error: error?.message ?? "Erro ao criar material." };
+  }
+
+  revalidatePath("/materiais");
+  return { material: data };
 }
 
 export async function updateMaterialAction(materialId: string, formData: FormData) {
@@ -60,11 +127,18 @@ export async function updateMaterialAction(materialId: string, formData: FormDat
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const companyId = await requireCompanyId(supabase, user.id);
+  const unidade = parsed.data.unidade || null;
+
+  if (await hasDuplicateMaterial(supabase, companyId, parsed.data.nome, unidade, materialId)) {
+    redirect(`/materiais?editar=${materialId}&error=${encodeURIComponent("Já existe um material com esse nome e unidade.")}`);
+  }
+
   const { error } = await supabase
     .from("materials")
     .update({
       nome: parsed.data.nome,
-      unidade: parsed.data.unidade || null,
+      unidade,
     })
     .eq("id", materialId);
 

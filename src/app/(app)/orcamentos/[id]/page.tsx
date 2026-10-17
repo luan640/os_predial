@@ -15,7 +15,9 @@ import { requireCompanyId } from "@/lib/queries/company";
 import { formatRelativeDateTime } from "@/lib/format";
 import { OVERDUE_BADGE, isBudgetOverdue, type BudgetStatus } from "@/lib/budget-status";
 import { SetPageHeader } from "@/components/layout/set-page-header";
-import { StatusSelect } from "@/components/budgets/status-select";
+import { BudgetStatusFunnel } from "@/components/budgets/budget-status-funnel";
+import { BudgetStatusHistory } from "@/components/budgets/budget-status-history";
+import { BudgetStatusHistoryCard } from "@/components/budgets/budget-status-history-card";
 import { BudgetActionsMenu } from "@/components/budgets/budget-actions-menu";
 import { BudgetKpiCards } from "@/components/budgets/budget-kpi-cards";
 import { ClientMiniCard } from "@/components/budgets/client-mini-card";
@@ -70,12 +72,18 @@ export default async function OrcamentoDetailPage({
 
   const client = Array.isArray(budget.clients) ? budget.clients[0] : budget.clients;
 
-  const [{ data: clients }, { data: items }, { data: scopeItems }, { data: materials }] = await Promise.all([
-    supabase.from("clients").select("id, nome").eq("company_id", companyId).order("nome"),
-    supabase.from("budget_items").select("*").eq("budget_id", id).order("created_at"),
-    supabase.from("budget_scope_items").select("id, descricao").eq("budget_id", id).order("ordem"),
-    supabase.from("materials").select("id, nome, unidade").eq("company_id", companyId).order("nome"),
-  ]);
+  const [{ data: clients }, { data: items }, { data: scopeItems }, { data: materials }, { data: statusHistory }] =
+    await Promise.all([
+      supabase.from("clients").select("id, nome").eq("company_id", companyId).order("nome"),
+      supabase.from("budget_items").select("*").eq("budget_id", id).order("created_at"),
+      supabase.from("budget_scope_items").select("id, descricao").eq("budget_id", id).order("ordem"),
+      supabase.from("materials").select("id, nome, unidade").eq("company_id", companyId).order("nome"),
+      supabase
+        .from("budget_status_history")
+        .select("id, status, changed_at")
+        .eq("budget_id", id)
+        .order("changed_at", { ascending: false }),
+    ]);
 
   const { data: photoGroups } = await supabase
     .from("budget_photo_groups")
@@ -151,16 +159,20 @@ export default async function OrcamentoDetailPage({
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2 text-foreground">
-            <StatusSelect status={budget.status as BudgetStatus} action={updateStatusWithId} />
-            {isBudgetOverdue(budget.status as BudgetStatus, budget.data_previsao_entrega) && (
-              <Badge className={OVERDUE_BADGE.className}>{OVERDUE_BADGE.label}</Badge>
-            )}
-            <BudgetActionsMenu deleteAction={deleteWithId} />
+            <BudgetActionsMenu deleteAction={deleteWithId} cancelAction={updateStatusWithId} />
             <Button render={<a href={`/orcamentos/${id}/pdf`} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
               <Download className="size-4" />
               Baixar PDF
             </Button>
           </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 text-foreground">
+          <BudgetStatusFunnel status={budget.status as BudgetStatus} action={updateStatusWithId} />
+          {isBudgetOverdue(budget.status as BudgetStatus, budget.data_previsao_entrega) && (
+            <Badge className={OVERDUE_BADGE.className}>{OVERDUE_BADGE.label}</Badge>
+          )}
+          <BudgetStatusHistory entries={statusHistory ?? []} />
         </div>
       </div>
 
@@ -220,7 +232,10 @@ export default async function OrcamentoDetailPage({
               </CardContent>
             </Card>
 
-            <div className="flex flex-col gap-4">{client && <ClientMiniCard client={client} />}</div>
+            <div className="flex flex-col gap-4">
+              {client && <ClientMiniCard client={client} />}
+              <BudgetStatusHistoryCard entries={statusHistory ?? []} />
+            </div>
           </div>
         </TabsContent>
 

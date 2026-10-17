@@ -50,10 +50,12 @@ function ComboboxContent({
   className,
   children,
   sideOffset = 4,
+  footer,
   ...props
 }: Omit<ComboboxPrimitive.Popup.Props, "children"> &
   Pick<ComboboxPrimitive.Positioner.Props, "sideOffset"> & {
     children: ComboboxPrimitive.List.Props["children"]
+    footer?: React.ReactNode
   }) {
   return (
     <ComboboxPrimitive.Portal>
@@ -70,6 +72,7 @@ function ComboboxContent({
             Nenhum resultado encontrado.
           </ComboboxPrimitive.Empty>
           <ComboboxPrimitive.List className="p-1">{children}</ComboboxPrimitive.List>
+          {footer && <div className="border-t border-border p-1">{footer}</div>}
         </ComboboxPrimitive.Popup>
       </ComboboxPrimitive.Positioner>
     </ComboboxPrimitive.Portal>

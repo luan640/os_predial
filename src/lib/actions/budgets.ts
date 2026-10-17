@@ -144,6 +144,8 @@ export async function updateBudgetStatusAction(budgetId: string, formData: FormD
     redirect(`/orcamentos/${budgetId}?error=${encodeURIComponent(error.message)}`);
   }
 
+  await supabase.from("budget_status_history").insert({ budget_id: budgetId, status: parsed.data });
+
   revalidatePath("/orcamentos");
   revalidatePath(`/orcamentos/${budgetId}`);
   redirect(`/orcamentos/${budgetId}`);
