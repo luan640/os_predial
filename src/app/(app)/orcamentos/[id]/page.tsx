@@ -12,7 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { requireCompanyId } from "@/lib/queries/company";
 import { formatRelativeDateTime } from "@/lib/format";
-import { BUDGET_STATUS_CONFIG, OVERDUE_BADGE, isBudgetOverdue, type BudgetStatus } from "@/lib/budget-status";
+import { BUDGET_STATUS_CONFIG, isBudgetOverdue, type BudgetStatus } from "@/lib/budget-status";
 import { SetPageHeader } from "@/components/layout/set-page-header";
 import { BudgetStatusFunnel } from "@/components/budgets/budget-status-funnel";
 import { BudgetStatusHistoryCard } from "@/components/budgets/budget-status-history-card";
@@ -178,9 +178,6 @@ export default async function OrcamentoDetailPage({
           <Badge className={BUDGET_STATUS_CONFIG[budget.status as BudgetStatus].className}>
             {BUDGET_STATUS_CONFIG[budget.status as BudgetStatus].label}
           </Badge>
-          {isBudgetOverdue(budget.status as BudgetStatus, budget.data_previsao_entrega) && (
-            <Badge className={OVERDUE_BADGE.className}>{OVERDUE_BADGE.label}</Badge>
-          )}
         </div>
       </div>
 
@@ -194,6 +191,7 @@ export default async function OrcamentoDetailPage({
         valorTotal={budget.valor_total}
         itemsTotal={itemsTotal}
         dataPrevisaoEntrega={budget.data_previsao_entrega}
+        overdue={isBudgetOverdue(budget.status as BudgetStatus, budget.data_previsao_entrega)}
       />
 
       <Tabs defaultValue={tab ?? "visao-geral"}>

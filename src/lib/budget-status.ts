@@ -58,12 +58,6 @@ export function isBudgetOverdue(
   return dataPrevisaoEntrega < todayStr;
 }
 
-export const OVERDUE_BADGE = {
-  label: "Atrasado",
-  className: "bg-[color-mix(in_oklch,var(--chart-5),transparent_85%)] text-[color:var(--chart-5)]",
-  dot: "bg-[color:var(--chart-5)]",
-};
-
 export const BUDGET_ITEM_TYPES = [
   { value: "material", label: "Material" },
   { value: "mao_de_obra", label: "Mão de obra" },

@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { Building2, FileText } from "lucide-react";
+import { Building2, FileText, KeyRound } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CompanyForm } from "@/components/company/company-form";
 import { ReportDefaultsForm } from "@/components/company/report-defaults-form";
+import { ChangePasswordForm } from "@/components/company/change-password-form";
 import { createClient } from "@/lib/supabase/server";
 import { updateCompany } from "@/lib/actions/company";
 
@@ -49,6 +50,10 @@ export default async function ConfiguracoesPage({
             <FileText className="size-4" />
             Modelo de relatório
           </TabsTrigger>
+          <TabsTrigger value="conta">
+            <KeyRound className="size-4" />
+            Conta
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="empresa" className="mt-4 w-full">
@@ -64,8 +69,8 @@ export default async function ConfiguracoesPage({
                 action={updateCompany}
                 defaultValues={company}
                 submitLabel="Salvar alterações"
-                error={tab !== "relatorio" ? error : undefined}
-                message={tab !== "relatorio" ? message : undefined}
+                error={!tab || tab === "empresa" ? error : undefined}
+                message={!tab || tab === "empresa" ? message : undefined}
               />
             </CardContent>
           </Card>
@@ -85,6 +90,21 @@ export default async function ConfiguracoesPage({
                 defaultValues={company}
                 error={tab === "relatorio" ? error : undefined}
                 message={tab === "relatorio" ? message : undefined}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="conta" className="mt-4 w-full">
+          <Card className="mx-auto w-full max-w-lg">
+            <CardHeader>
+              <CardTitle className="text-base">Alterar senha</CardTitle>
+              <CardDescription>Informe sua senha atual para definir uma nova.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChangePasswordForm
+                error={tab === "conta" ? error : undefined}
+                message={tab === "conta" ? message : undefined}
               />
             </CardContent>
           </Card>

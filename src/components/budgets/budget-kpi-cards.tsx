@@ -1,4 +1,5 @@
-import { CalendarClock, Package } from "lucide-react";
+import { CalendarClock, Package, TriangleAlert } from "lucide-react";
+import { cn } from "cn";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyBRL, formatDate } from "@/lib/format";
 
@@ -15,10 +16,12 @@ export function BudgetKpiCards({
   valorTotal,
   itemsTotal,
   dataPrevisaoEntrega,
+  overdue,
 }: {
   valorTotal: number;
   itemsTotal: number;
   dataPrevisaoEntrega: string | null;
+  overdue?: boolean;
 }) {
   const diff = daysUntil(dataPrevisaoEntrega);
   const prazoSubtitle =
@@ -58,8 +61,14 @@ export function BudgetKpiCards({
             <CalendarClock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <div className="flex min-w-0 flex-col">
               <p className="text-xs text-muted-foreground">Entrega</p>
-              <p className="truncate text-base font-semibold tabular-nums text-foreground">
+              <p
+                className={cn(
+                  "flex items-center gap-1 truncate text-base font-semibold tabular-nums",
+                  overdue ? "text-[color:var(--chart-5)]" : "text-foreground",
+                )}
+              >
                 {formatDate(dataPrevisaoEntrega)}
+                {overdue && <TriangleAlert className="size-3.5 shrink-0" />}
               </p>
               <p className="truncate text-[11px] text-muted-foreground">{prazoSubtitle}</p>
             </div>

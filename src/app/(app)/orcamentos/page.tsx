@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChevronRight, Search } from "lucide-react";
+import { ChevronRight, Search, TriangleAlert } from "lucide-react";
+import { cn } from "cn";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,7 +20,6 @@ import { formatCurrencyBRL, formatDate } from "@/lib/format";
 import {
   BUDGET_STATUS,
   BUDGET_STATUS_CONFIG,
-  OVERDUE_BADGE,
   isBudgetOverdue,
   type BudgetStatus,
 } from "@/lib/budget-status";
@@ -52,7 +52,9 @@ export default async function OrcamentosPage({
 
   let query = supabase
     .from("budgets")
-    .select("id, titulo, numero, status, valor_total, data_previsao_entrega, clients(nome)")
+    .select(
+      "id, titulo, numero, numero_pedido, numero_nota, status, valor_total, data_previsao_entrega, clients(nome)",
+    )
     .eq("company_id", companyId)
     .order(sortOption.column, { ascending: sortOption.ascending });
 
@@ -72,6 +74,9 @@ export default async function OrcamentosPage({
     const orParts = [`titulo.ilike.%${term}%`, `numero.ilike.%${term}%`];
     if (clientIds.length > 0) {
       orParts.push(`client_id.in.(${clientIds.join(",")})`);
+    }
+    if (/^\d+$/.test(term)) {
+      orParts.push(`numero_pedido.eq.${term}`, `numero_nota.eq.${term}`);
     }
     query = query.or(orParts.join(","));
   }
@@ -105,7 +110,7 @@ export default async function OrcamentosPage({
           <Input
             name="q"
             defaultValue={q ?? ""}
-            placeholder="Buscar por título ou cliente..."
+            placeholder="Buscar por título, cliente, pedido ou nota..."
             className="h-11 pl-9 sm:h-8"
           />
         </form>
@@ -119,6 +124,7 @@ export default async function OrcamentosPage({
               <TableHead className="w-20">Nº</TableHead>
               <TableHead>Orçamento</TableHead>
               <TableHead>Cliente</TableHead>
+              <TableHead>Pedido / Nota</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Previsão de entrega</TableHead>
               <TableHead className="text-right">Valor</TableHead>
@@ -140,14 +146,29 @@ export default async function OrcamentosPage({
                       </Link>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{client?.nome ?? "—"}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1.5">
-                        <Badge className={statusInfo?.className}>{statusInfo?.label ?? budget.status}</Badge>
-                        {overdue && <Badge className={OVERDUE_BADGE.className}>{OVERDUE_BADGE.label}</Badge>}
-                      </div>
-                    </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {formatDate(budget.data_previsao_entrega)}
+                      {budget.numero_pedido || budget.numero_nota ? (
+                        <span className="flex flex-col text-xs leading-tight">
+                          {budget.numero_pedido && <span>Pedido {budget.numero_pedido}</span>}
+                          {budget.numero_nota && <span>Nota {budget.numero_nota}</span>}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={statusInfo?.className}>{statusInfo?.label ?? budget.status}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={cn(
+                          "flex items-center gap-1",
+                          overdue ? "font-medium text-[color:var(--chart-5)]" : "text-muted-foreground",
+                        )}
+                      >
+                        {formatDate(budget.data_previsao_entrega)}
+                        {overdue && <TriangleAlert className="size-3.5" />}
+                      </span>
                     </TableCell>
                     <TableCell className="text-right tabular-nums">
                       {formatCurrencyBRL(budget.valor_total)}
@@ -160,7 +181,7 @@ export default async function OrcamentosPage({
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="py-10 text-center text-muted-foreground">
                   {q || selectedStatuses.length > 0 ? "Nenhum orçamento encontrado." : "Nenhum orçamento cadastrado ainda."}
                 </TableCell>
               </TableRow>
@@ -188,9 +209,8 @@ export default async function OrcamentosPage({
                     </span>
                     <span className="font-medium text-foreground">{budget.titulo}</span>
                   </div>
-                  <div className="flex shrink-0 items-center gap-1.5">
+                  <div className="shrink-0">
                     <Badge className={statusInfo?.className}>{statusInfo?.label ?? budget.status}</Badge>
-                    {overdue && <Badge className={OVERDUE_BADGE.className}>{OVERDUE_BADGE.label}</Badge>}
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-3 text-sm">
@@ -199,9 +219,23 @@ export default async function OrcamentosPage({
                     {formatCurrencyBRL(budget.valor_total)}
                   </span>
                 </div>
+                {(budget.numero_pedido || budget.numero_nota) && (
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    {budget.numero_pedido && <span>Pedido {budget.numero_pedido}</span>}
+                    {budget.numero_nota && <span>Nota {budget.numero_nota}</span>}
+                  </div>
+                )}
                 <div className="flex items-center justify-between gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
                   <span>Previsão de entrega</span>
-                  <span>{formatDate(budget.data_previsao_entrega)}</span>
+                  <span
+                    className={cn(
+                      "flex items-center gap-1",
+                      overdue && "font-medium text-[color:var(--chart-5)]",
+                    )}
+                  >
+                    {formatDate(budget.data_previsao_entrega)}
+                    {overdue && <TriangleAlert className="size-3.5" />}
+                  </span>
                 </div>
               </Link>
             );
