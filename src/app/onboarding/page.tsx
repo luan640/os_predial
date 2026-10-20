@@ -27,7 +27,7 @@ export default async function OnboardingPage({
     .maybeSingle();
 
   if (company) {
-    redirect("/dashboard");
+    redirect("/orcamentos");
   }
 
   return (

@@ -101,7 +101,7 @@ export function ItemsTab({
             <TableFooter>
               <TableRow>
                 <TableCell colSpan={5} className="text-right font-medium text-muted-foreground">
-                  Total em itens
+                  Gasto
                 </TableCell>
                 <TableCell className="text-right tabular-nums font-semibold">
                   {formatCurrencyBRL(total)}

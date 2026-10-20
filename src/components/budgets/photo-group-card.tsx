@@ -1,4 +1,4 @@
-import { Images } from "lucide-react";
+import { CalendarDays, Images } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDeleteButton } from "@/components/ui/confirm-delete-button";
 import { AddMorePhotosDialog } from "@/components/budgets/add-more-photos-dialog";
@@ -25,9 +25,12 @@ export function PhotoGroupCard({
             <Images className="size-4 text-muted-foreground" />
             {group.titulo}
           </CardTitle>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {formatDate(group.created_at?.slice(0, 10))} · {group.photos.length}{" "}
-            {group.photos.length === 1 ? "foto" : "fotos"}
+          <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+            <CalendarDays className="size-3" />
+            {formatDate(group.created_at?.slice(0, 10))}
+            <span className="mx-0.5">·</span>
+            <Images className="size-3" />
+            {group.photos.length} {group.photos.length === 1 ? "foto" : "fotos"}
           </p>
         </div>
         <div className="flex items-center gap-1">

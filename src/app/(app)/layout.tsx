@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { MobileNav } from "@/components/layout/mobile-nav";
@@ -6,6 +7,7 @@ import { SidebarProvider } from "@/components/layout/sidebar-context";
 import { UserMenu } from "@/components/layout/user-menu";
 import { PageHeaderProvider } from "@/components/layout/page-header-context";
 import { HeaderBackSlot } from "@/components/layout/header-back-slot";
+import { ToastFromParams } from "@/components/layout/toast-from-params";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -15,12 +17,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <SidebarProvider>
+      <Suspense fallback={null}>
+        <ToastFromParams />
+      </Suspense>
       <div className="flex min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-background">
         <AppSidebar />
 
         <PageHeaderProvider>
           <div className="flex min-w-0 flex-1 flex-col">
-            <header className="flex h-16 shrink-0 items-center gap-4 border-b border-border bg-card px-4 md:px-6">
+            <header className="flex h-12 shrink-0 items-center gap-3 border-b border-border bg-card px-4 sm:h-16 sm:gap-4 md:px-6">
               <MobileNav />
               <SidebarToggle />
               <HeaderBackSlot />

@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { Pencil, Power, PowerOff, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -41,7 +42,12 @@ export function ClientRowActions({
         disabled={isPending}
         title={ativo ? "Inativar" : "Ativar"}
         className={ativo ? "text-muted-foreground" : "text-[color:var(--chart-2)]"}
-        onClick={() => startTransition(() => toggleClientActiveAction(clientId, !ativo))}
+        onClick={() =>
+          startTransition(async () => {
+            await toggleClientActiveAction(clientId, !ativo);
+            toast.success(ativo ? "Cliente inativado." : "Cliente ativado.");
+          })
+        }
       >
         {ativo ? <PowerOff className="size-4" /> : <Power className="size-4" />}
       </Button>
@@ -63,7 +69,7 @@ export function ClientRowActions({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <form action={deleteClientAction.bind(null, clientId)}>
+            <form action={deleteClientAction.bind(null, clientId)} className="contents">
               <AlertDialogAction type="submit" className="bg-destructive text-white hover:bg-destructive/90">
                 Excluir
               </AlertDialogAction>

@@ -69,7 +69,7 @@ export async function createPhotoGroupAction(budgetId: string, formData: FormDat
   await uploadPhotos(supabase, user.id, group.id, photos, 0);
 
   revalidatePath(`/orcamentos/${budgetId}`);
-  redirect(`/orcamentos/${budgetId}?tab=objetivo`);
+  redirect(`/orcamentos/${budgetId}?tab=objetivo&message=${encodeURIComponent("Registro de fotos criado.")}`);
 }
 
 export async function addPhotosToGroupAction(budgetId: string, formData: FormData) {
@@ -94,7 +94,7 @@ export async function addPhotosToGroupAction(budgetId: string, formData: FormDat
   await uploadPhotos(supabase, user.id, groupId, photos, count ?? 0);
 
   revalidatePath(`/orcamentos/${budgetId}`);
-  redirect(`/orcamentos/${budgetId}?tab=objetivo`);
+  redirect(`/orcamentos/${budgetId}?tab=objetivo&message=${encodeURIComponent("Fotos adicionadas.")}`);
 }
 
 export async function deletePhotoGroupAction(budgetId: string, formData: FormData) {
@@ -104,7 +104,7 @@ export async function deletePhotoGroupAction(budgetId: string, formData: FormDat
     await supabase.from("budget_photo_groups").delete().eq("id", groupId);
   }
   revalidatePath(`/orcamentos/${budgetId}`);
-  redirect(`/orcamentos/${budgetId}?tab=objetivo`);
+  redirect(`/orcamentos/${budgetId}?tab=objetivo&message=${encodeURIComponent("Registro de fotos excluído.")}`);
 }
 
 export async function deletePhotoAction(budgetId: string, formData: FormData) {
@@ -114,5 +114,5 @@ export async function deletePhotoAction(budgetId: string, formData: FormData) {
     await supabase.from("budget_photos").delete().eq("id", photoId);
   }
   revalidatePath(`/orcamentos/${budgetId}`);
-  redirect(`/orcamentos/${budgetId}?tab=objetivo`);
+  redirect(`/orcamentos/${budgetId}?tab=objetivo&message=${encodeURIComponent("Foto removida.")}`);
 }

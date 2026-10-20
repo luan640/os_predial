@@ -80,7 +80,7 @@ export async function createCompany(formData: FormData) {
     redirect(`/onboarding?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect("/dashboard");
+  redirect("/orcamentos");
 }
 
 export async function updateCompany(formData: FormData) {

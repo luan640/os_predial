@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CurrencyInput } from "@/components/ui/currency-input";
@@ -60,6 +60,7 @@ export function BudgetForm({
           id="titulo"
           name="titulo"
           placeholder="Ex: Reforma do telhado"
+          className="h-11 md:h-8"
           defaultValue={defaultValues?.titulo}
           required
         />
@@ -69,7 +70,7 @@ export function BudgetForm({
         <Label htmlFor="client_id">Cliente</Label>
         <Combobox name="client_id" defaultValue={defaultValues?.client_id} items={clientItems}>
           <ComboboxInputGroup>
-            <ComboboxInput id="client_id" placeholder="Buscar cliente..." />
+            <ComboboxInput id="client_id" placeholder="Buscar cliente..." className="h-11 md:h-8" />
             <ComboboxTrigger />
           </ComboboxInputGroup>
           <ComboboxContent>
@@ -89,7 +90,7 @@ export function BudgetForm({
             id="numero"
             name="numero"
             placeholder="91/2026"
-            className="cursor-not-allowed bg-muted text-muted-foreground"
+            className="h-11 cursor-not-allowed bg-muted text-muted-foreground md:h-8"
             defaultValue={defaultValues?.numero ?? ""}
             readOnly
             tabIndex={-1}
@@ -99,6 +100,7 @@ export function BudgetForm({
           id="valor_total"
           name="valor_total"
           label="Valor do orçamento"
+          inputClassName="h-11 md:h-8"
           defaultValue={defaultValues?.valor_total}
         />
       </div>
@@ -120,14 +122,14 @@ export function BudgetForm({
             min="1"
             step="1"
             defaultValue={defaultValues?.prazo_qtd ?? 1}
-            className="w-20"
+            className="h-11 w-20 md:h-8"
           />
           <Select
             name="prazo_unidade"
             defaultValue={defaultValues?.prazo_unidade ?? "dia"}
             items={Object.fromEntries(PRAZO_UNIDADES.map((u) => [u.value, u.plural]))}
           >
-            <SelectTrigger className="w-36">
+            <SelectTrigger className="w-36 data-[size=default]:h-11 md:data-[size=default]:h-8">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -143,9 +145,7 @@ export function BudgetForm({
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <Button type="submit" className="mt-2 w-fit self-end">
-        {submitLabel}
-      </Button>
+      <SubmitButton className="mt-2 h-11 w-full sm:h-8 sm:w-fit sm:self-end">{submitLabel}</SubmitButton>
     </form>
   );
 }

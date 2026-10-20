@@ -17,9 +17,9 @@ export function ClientMiniCard({
     .toUpperCase();
 
   return (
-    <Card>
+    <Card size="sm">
       <CardHeader className="flex-row items-center justify-between space-y-0">
-        <CardTitle className="flex items-center gap-2 text-base">
+        <CardTitle className="flex items-center gap-2 text-sm">
           <User className="size-4 text-muted-foreground" />
           Cliente
         </CardTitle>
@@ -32,21 +32,21 @@ export function ClientMiniCard({
         </Link>
       </CardHeader>
       <CardContent className="flex items-center gap-3">
-        <Avatar className="size-10">
+        <Avatar className="size-9 shrink-0">
           <AvatarFallback className="bg-primary text-sm text-primary-foreground">{initials}</AvatarFallback>
         </Avatar>
         <div className="flex min-w-0 flex-col gap-0.5">
           <p className="truncate text-sm font-medium text-foreground">{client.nome}</p>
           {client.telefone && (
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Phone className="size-3" />
-              {client.telefone}
+              <Phone className="size-3 shrink-0" />
+              <span className="truncate">{client.telefone}</span>
             </p>
           )}
           {client.email && (
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Mail className="size-3" />
-              {client.email}
+              <Mail className="size-3 shrink-0" />
+              <span className="truncate">{client.email}</span>
             </p>
           )}
         </div>

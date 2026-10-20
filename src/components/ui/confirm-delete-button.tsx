@@ -43,7 +43,7 @@ export function ConfirmDeleteButton({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <form action={action}>
+          <form action={action} className="contents">
             <input type="hidden" name={hiddenFieldName} value={hiddenFieldValue} />
             <AlertDialogAction type="submit" className="bg-destructive text-white hover:bg-destructive/90">
               Excluir

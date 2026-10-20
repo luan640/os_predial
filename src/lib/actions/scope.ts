@@ -64,7 +64,7 @@ export async function updateScopeItemAction(budgetId: string, formData: FormData
   }
 
   revalidatePath(`/orcamentos/${budgetId}`);
-  redirect(`/orcamentos/${budgetId}?tab=escopo`);
+  redirect(`/orcamentos/${budgetId}?tab=escopo&message=${encodeURIComponent("Item do escopo atualizado.")}`);
 }
 
 export async function deleteScopeItemAction(budgetId: string, formData: FormData) {
@@ -74,5 +74,5 @@ export async function deleteScopeItemAction(budgetId: string, formData: FormData
     await supabase.from("budget_scope_items").delete().eq("id", itemId);
   }
   revalidatePath(`/orcamentos/${budgetId}`);
-  redirect(`/orcamentos/${budgetId}?tab=escopo`);
+  redirect(`/orcamentos/${budgetId}?tab=escopo&message=${encodeURIComponent("Item do escopo removido.")}`);
 }

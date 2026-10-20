@@ -1,4 +1,4 @@
-import { CalendarClock, DollarSign, Package } from "lucide-react";
+import { CalendarClock, Package } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrencyBRL, formatDate } from "@/lib/format";
 
@@ -14,63 +14,58 @@ function daysUntil(date: string | null) {
 export function BudgetKpiCards({
   valorTotal,
   itemsTotal,
-  itemsCount,
   dataPrevisaoEntrega,
 }: {
   valorTotal: number;
   itemsTotal: number;
-  itemsCount: number;
   dataPrevisaoEntrega: string | null;
 }) {
   const diff = daysUntil(dataPrevisaoEntrega);
-
-  const cards = [
-    {
-      icon: DollarSign,
-      iconClassName: "bg-[color-mix(in_oklch,var(--primary),transparent_85%)] text-primary",
-      label: "Valor do orçamento",
-      value: formatCurrencyBRL(valorTotal),
-      subtitle: "Valor total estimado",
-    },
-    {
-      icon: Package,
-      iconClassName: "bg-[color-mix(in_oklch,var(--chart-4),transparent_85%)] text-[color:var(--chart-4)]",
-      label: "Total em itens",
-      value: formatCurrencyBRL(itemsTotal),
-      subtitle: `${itemsCount} ${itemsCount === 1 ? "item cadastrado" : "itens cadastrados"}`,
-    },
-    {
-      icon: CalendarClock,
-      iconClassName: "bg-[color-mix(in_oklch,var(--chart-3),transparent_85%)] text-[color:var(--chart-3)]",
-      label: "Previsão de entrega",
-      value: formatDate(dataPrevisaoEntrega),
-      subtitle:
-        diff === null
-          ? "Sem data definida"
-          : diff > 0
-            ? `Em ${diff} dia${diff === 1 ? "" : "s"}`
-            : diff === 0
-              ? "É hoje"
-              : `${Math.abs(diff)} dia${Math.abs(diff) === 1 ? "" : "s"} de atraso`,
-    },
-  ];
+  const prazoSubtitle =
+    diff === null
+      ? "Sem data definida"
+      : diff > 0
+        ? `Em ${diff} dia${diff === 1 ? "" : "s"}`
+        : diff === 0
+          ? "É hoje"
+          : `${Math.abs(diff)} dia${Math.abs(diff) === 1 ? "" : "s"} de atraso`;
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      {cards.map((card) => (
-        <Card key={card.label}>
-          <CardContent className="flex items-start gap-3 py-4">
-            <span className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${card.iconClassName}`}>
-              <card.icon className="size-4.5" />
-            </span>
+    <div className="flex flex-col gap-3">
+      <Card size="sm">
+        <CardContent className="flex flex-col items-center gap-0.5 py-4 text-center">
+          <p className="text-xs text-muted-foreground">Valor do orçamento</p>
+          <p className="text-2xl font-semibold tabular-nums text-foreground">{formatCurrencyBRL(valorTotal)}</p>
+          <p className="text-xs text-muted-foreground">Valor total estimado</p>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Card size="sm">
+          <CardContent className="flex items-start gap-2.5 py-3">
+            <Package className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
             <div className="flex min-w-0 flex-col">
-              <p className="text-xs text-muted-foreground">{card.label}</p>
-              <p className="truncate text-lg font-semibold tabular-nums text-foreground">{card.value}</p>
-              <p className="truncate text-xs text-muted-foreground">{card.subtitle}</p>
+              <p className="text-xs text-muted-foreground">Gasto previsto</p>
+              <p className="truncate text-base font-semibold tabular-nums text-foreground">
+                {formatCurrencyBRL(itemsTotal)}
+              </p>
             </div>
           </CardContent>
         </Card>
-      ))}
+
+        <Card size="sm">
+          <CardContent className="flex items-start gap-2.5 py-3">
+            <CalendarClock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+            <div className="flex min-w-0 flex-col">
+              <p className="text-xs text-muted-foreground">Entrega</p>
+              <p className="truncate text-base font-semibold tabular-nums text-foreground">
+                {formatDate(dataPrevisaoEntrega)}
+              </p>
+              <p className="truncate text-[11px] text-muted-foreground">{prazoSubtitle}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

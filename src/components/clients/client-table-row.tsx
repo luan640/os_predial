@@ -14,6 +14,7 @@ import { ClientForm } from "@/components/clients/client-form";
 import { ClientRowActions } from "@/components/clients/client-row-actions";
 import { updateClientAction } from "@/lib/actions/clients";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/lib/use-is-mobile";
 
 type Client = {
   id: string;
@@ -37,6 +38,7 @@ export function ClientTableRow({
   error?: string;
 }) {
   const [open, setOpen] = useState(!!defaultOpen);
+  const isMobile = useIsMobile();
 
   return (
     <>
@@ -80,7 +82,10 @@ export function ClientTableRow({
       </TableRow>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="flex w-full flex-col sm:max-w-md">
+        <SheetContent
+          side={isMobile ? "bottom" : "right"}
+          className="flex w-full flex-col sm:max-w-md data-[side=bottom]:max-h-[85vh] data-[side=bottom]:rounded-t-xl"
+        >
           <SheetHeader>
             <SheetTitle>Editar cliente</SheetTitle>
             <SheetDescription>Atualize os dados de {client.nome}.</SheetDescription>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
 import { MoreVertical, Trash2, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,10 +31,13 @@ export function BudgetActionsMenu({
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const searchParams = useSearchParams();
 
   function handleConfirmCancel() {
     const formData = new FormData();
     formData.set("status", "cancelado");
+    const currentTab = searchParams.get("tab");
+    if (currentTab) formData.set("tab", currentTab);
     startTransition(() => {
       cancelAction(formData);
     });
@@ -43,7 +47,7 @@ export function BudgetActionsMenu({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger render={<Button variant="outline" size="icon" />}>
+        <DropdownMenuTrigger render={<Button variant="outline" size="icon-sm" />}>
           <MoreVertical className="size-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -85,7 +89,7 @@ export function BudgetActionsMenu({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <form action={deleteAction}>
+            <form action={deleteAction} className="contents">
               <AlertDialogAction type="submit" className="bg-destructive text-white hover:bg-destructive/90">
                 Excluir
               </AlertDialogAction>

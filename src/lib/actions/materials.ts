@@ -164,5 +164,5 @@ export async function deleteMaterialAction(materialId: string) {
   }
 
   revalidatePath("/materiais");
-  redirect("/materiais");
+  redirect(`/materiais?message=${encodeURIComponent("Material excluído.")}`);
 }

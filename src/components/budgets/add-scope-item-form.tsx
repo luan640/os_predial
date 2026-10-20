@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import { ListChecks } from "lucide-react";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { ScopeFormState } from "@/lib/actions/scope";
@@ -19,6 +20,7 @@ export function AddScopeItemForm({
   useEffect(() => {
     if (state && !state.error) {
       formRef.current?.reset();
+      toast.success("Item do escopo adicionado.");
     }
   }, [state]);
 

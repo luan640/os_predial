@@ -41,7 +41,7 @@ export async function createBudgetItemAction(budgetId: string, formData: FormDat
   }
 
   revalidatePath(`/orcamentos/${budgetId}`);
-  redirect(`/orcamentos/${budgetId}?tab=itens`);
+  redirect(`/orcamentos/${budgetId}?tab=itens&message=${encodeURIComponent("Item adicionado.")}`);
 }
 
 export async function deleteBudgetItemAction(budgetId: string, formData: FormData) {
@@ -51,5 +51,5 @@ export async function deleteBudgetItemAction(budgetId: string, formData: FormDat
     await supabase.from("budget_items").delete().eq("id", itemId);
   }
   revalidatePath(`/orcamentos/${budgetId}`);
-  redirect(`/orcamentos/${budgetId}?tab=itens`);
+  redirect(`/orcamentos/${budgetId}?tab=itens&message=${encodeURIComponent("Item removido.")}`);
 }

@@ -140,5 +140,5 @@ export async function deleteClientAction(clientId: string) {
   }
 
   revalidatePath("/clientes");
-  redirect("/clientes");
+  redirect(`/clientes?message=${encodeURIComponent("Cliente excluído.")}`);
 }

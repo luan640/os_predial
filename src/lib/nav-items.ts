@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  LayoutDashboard,
   Users,
   ClipboardList,
   Package,
@@ -14,9 +13,8 @@ export type NavItem = {
 };
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Painel", icon: LayoutDashboard },
-  { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/orcamentos", label: "Orçamentos", icon: ClipboardList },
+  { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/materiais", label: "Materiais", icon: Package },
   { href: "/configuracoes", label: "Configurações", icon: Settings },
 ];

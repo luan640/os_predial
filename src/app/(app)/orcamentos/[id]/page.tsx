@@ -1,9 +1,8 @@
 import { notFound, redirect } from "next/navigation";
-import { Clock3, Download, LayoutGrid, ListChecks, Package, Target } from "lucide-react";
+import { Building2, Clock3, Download, LayoutGrid, ListChecks, Package, Phone, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Tabs,
   TabsContent,
@@ -13,10 +12,9 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { requireCompanyId } from "@/lib/queries/company";
 import { formatRelativeDateTime } from "@/lib/format";
-import { OVERDUE_BADGE, isBudgetOverdue, type BudgetStatus } from "@/lib/budget-status";
+import { BUDGET_STATUS_CONFIG, OVERDUE_BADGE, isBudgetOverdue, type BudgetStatus } from "@/lib/budget-status";
 import { SetPageHeader } from "@/components/layout/set-page-header";
 import { BudgetStatusFunnel } from "@/components/budgets/budget-status-funnel";
-import { BudgetStatusHistory } from "@/components/budgets/budget-status-history";
 import { BudgetStatusHistoryCard } from "@/components/budgets/budget-status-history-card";
 import { BudgetActionsMenu } from "@/components/budgets/budget-actions-menu";
 import { BudgetKpiCards } from "@/components/budgets/budget-kpi-cards";
@@ -124,62 +122,77 @@ export default async function OrcamentoDetailPage({
   const updateScopeItemWithId = updateScopeItemAction.bind(null, id);
   const deleteScopeItemWithId = deleteScopeItemAction.bind(null, id);
 
-  const clientInitials = client?.nome
-    ? client.nome
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part: string) => part[0])
-        .join("")
-        .toUpperCase()
-    : "—";
-
   const updatedAt = formatRelativeDateTime(budget.updated_at);
 
   return (
     <div className="flex flex-col gap-6">
       <SetPageHeader href="/orcamentos" label="Orçamentos" />
 
-      <div className="flex flex-col gap-4 rounded-xl border border-border bg-gradient-to-br from-sidebar to-[color-mix(in_oklch,var(--sidebar),var(--primary)_18%)] p-6 text-sidebar-foreground">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-sidebar-foreground">{budget.titulo}</h1>
-            {client && (
-              <div className="mt-2 flex items-center gap-2">
-                <Avatar className="size-6">
-                  <AvatarFallback className="bg-white/15 text-[10px] text-sidebar-foreground">
-                    {clientInitials}
-                  </AvatarFallback>
-                </Avatar>
-                <p className="text-sm text-sidebar-foreground/70">
-                  {client.nome}
-                  {client.telefone ? ` · ${client.telefone}` : ""}
-                </p>
-              </div>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-2 text-foreground">
-            <BudgetActionsMenu deleteAction={deleteWithId} cancelAction={updateStatusWithId} />
-            <Button render={<a href={`/orcamentos/${id}/pdf`} target="_blank" rel="noopener noreferrer" />} nativeButton={false}>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="min-w-0 truncate text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+            {budget.titulo}
+          </h1>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <Button
+              size="sm"
+              render={<a href={`/orcamentos/${id}/pdf`} target="_blank" rel="noopener noreferrer" />}
+              nativeButton={false}
+            >
               <Download className="size-4" />
-              Baixar PDF
+              <span className="hidden sm:inline">Baixar PDF</span>
             </Button>
+            <BudgetActionsMenu deleteAction={deleteWithId} cancelAction={updateStatusWithId} />
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-foreground">
-          <BudgetStatusFunnel status={budget.status as BudgetStatus} action={updateStatusWithId} />
+        {client && (
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_oklch,var(--chart-4),transparent_85%)] text-[color:var(--chart-4)]">
+                <Building2 className="size-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-foreground">{client.nome}</p>
+                {client.telefone && (
+                  <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Phone className="size-3 shrink-0" />
+                    <span className="truncate">{client.telefone}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+            {client.telefone && (
+              <a
+                href={`tel:${client.telefone.replace(/\D/g, "")}`}
+                aria-label="Ligar para o cliente"
+                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_oklch,var(--primary),transparent_88%)] text-primary"
+              >
+                <Phone className="size-4" />
+              </a>
+            )}
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge className={BUDGET_STATUS_CONFIG[budget.status as BudgetStatus].className}>
+            {BUDGET_STATUS_CONFIG[budget.status as BudgetStatus].label}
+          </Badge>
           {isBudgetOverdue(budget.status as BudgetStatus, budget.data_previsao_entrega) && (
             <Badge className={OVERDUE_BADGE.className}>{OVERDUE_BADGE.label}</Badge>
           )}
-          <BudgetStatusHistory entries={statusHistory ?? []} />
         </div>
       </div>
+
+      <Card size="sm">
+        <CardContent className="py-4">
+          <BudgetStatusFunnel status={budget.status as BudgetStatus} action={updateStatusWithId} />
+        </CardContent>
+      </Card>
 
       <BudgetKpiCards
         valorTotal={budget.valor_total}
         itemsTotal={itemsTotal}
-        itemsCount={items?.length ?? 0}
         dataPrevisaoEntrega={budget.data_previsao_entrega}
       />
 
@@ -206,7 +219,7 @@ export default async function OrcamentoDetailPage({
         <TabsContent value="visao-geral" className="mt-4">
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
-              <CardHeader className="flex-row items-start justify-between space-y-0">
+              <CardHeader className="flex-col items-start gap-1.5 space-y-0 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                 <div>
                   <CardTitle className="text-base">Dados do orçamento</CardTitle>
                   <CardDescription>Atualize título, cliente, prazos e valor combinado.</CardDescription>

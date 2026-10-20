@@ -44,7 +44,7 @@ export function MaterialRowActions({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <form action={deleteMaterialAction.bind(null, materialId)}>
+            <form action={deleteMaterialAction.bind(null, materialId)} className="contents">
               <AlertDialogAction type="submit" className="bg-destructive text-white hover:bg-destructive/90">
                 Excluir
               </AlertDialogAction>

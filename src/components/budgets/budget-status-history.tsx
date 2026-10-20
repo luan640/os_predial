@@ -1,6 +1,6 @@
 "use client";
 
-import { History } from "lucide-react";
+import { ChevronRight, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,12 +24,13 @@ export function BudgetStatusHistory({ entries }: { entries: HistoryEntry[] }) {
             type="button"
             variant="ghost"
             size="sm"
-            className="text-sidebar-foreground hover:bg-white/10 hover:text-sidebar-foreground"
+            className="text-muted-foreground hover:text-foreground"
           />
         }
       >
         <History className="size-3.5" />
         Histórico
+        <ChevronRight className="size-3.5" />
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>

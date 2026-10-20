@@ -28,7 +28,14 @@ export function AddPhotoGroupDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="secondary" />}>
+      <DialogTrigger
+        render={
+          <Button
+            variant="outline"
+            className="w-full border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
+          />
+        }
+      >
         <Plus className="size-4" />
         Novo registro de fotos
       </DialogTrigger>

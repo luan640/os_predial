@@ -1,7 +1,8 @@
 "use client";
 
-import { useTransition } from "react";
-import { Check, ChevronLeft, ChevronsRight } from "lucide-react";
+import { Fragment, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
+import { Check, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BUDGET_STATUS_CONFIG, type BudgetStatus } from "@/lib/budget-status";
@@ -16,10 +17,13 @@ export function BudgetStatusFunnel({
   action: (formData: FormData) => void | Promise<void>;
 }) {
   const [isPending, startTransition] = useTransition();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get("tab");
 
   function changeTo(nextStatus: BudgetStatus) {
     const formData = new FormData();
     formData.set("status", nextStatus);
+    if (currentTab) formData.set("tab", currentTab);
     startTransition(() => {
       action(formData);
     });
@@ -27,7 +31,7 @@ export function BudgetStatusFunnel({
 
   if (status === "cancelado") {
     return (
-      <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
         <span className="size-2 rounded-full bg-muted-foreground" />
         Orçamento cancelado
       </div>
@@ -39,54 +43,76 @@ export function BudgetStatusFunnel({
   const nextStatus = FUNNEL_STEPS[currentIndex + 1];
 
   return (
-    <div className="flex w-full flex-wrap items-center gap-3">
-      <div className="flex max-w-full items-center overflow-x-auto rounded-full bg-muted p-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex flex-col gap-3">
+      <div className="flex items-start">
         {FUNNEL_STEPS.map((step, index) => {
           const isDone = index < currentIndex;
           const isCurrent = index === currentIndex;
           return (
-            <div key={step} className="flex items-center">
-              <span
-                className={cn(
-                  "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors",
-                  isCurrent && "bg-primary text-primary-foreground shadow-sm",
-                  !isCurrent && isDone && "text-foreground",
-                  !isCurrent && !isDone && "text-muted-foreground",
-                )}
-              >
+            <Fragment key={step}>
+              <div className="flex min-w-0 flex-1 flex-col items-center gap-1">
                 <span
                   className={cn(
-                    "flex size-3.5 items-center justify-center rounded-full border",
-                    isCurrent && "border-primary-foreground/60",
+                    "flex size-6 shrink-0 items-center justify-center rounded-full border-2 text-[10px] font-semibold",
                     isDone && "border-[color:var(--chart-2)] bg-[color:var(--chart-2)] text-white",
-                    !isCurrent && !isDone && "border-border",
+                    isCurrent && "border-primary bg-primary text-primary-foreground",
+                    !isDone && !isCurrent && "border-border bg-background text-muted-foreground",
                   )}
                 >
-                  {isDone && <Check className="size-2.5" />}
+                  {isDone ? <Check className="size-3" /> : index + 1}
                 </span>
-                {BUDGET_STATUS_CONFIG[step].label}
-              </span>
+                <span
+                  className={cn(
+                    "w-full text-center text-[11px] leading-tight font-medium text-balance",
+                    isCurrent && "text-primary",
+                    isDone && "text-foreground",
+                    !isDone && !isCurrent && "text-muted-foreground",
+                  )}
+                >
+                  {BUDGET_STATUS_CONFIG[step].label}
+                </span>
+              </div>
               {index < FUNNEL_STEPS.length - 1 && (
-                <ChevronsRight className="size-3.5 shrink-0 text-muted-foreground/40" />
+                <div
+                  className={cn(
+                    "mt-3 h-0.5 w-2 shrink-0 sm:w-4",
+                    isDone ? "bg-[color:var(--chart-2)]" : "bg-border",
+                  )}
+                />
               )}
-            </div>
+            </Fragment>
           );
         })}
       </div>
 
-      <div className="flex items-center gap-2">
-        {previousStatus && (
-          <Button type="button" size="sm" variant="outline" disabled={isPending} onClick={() => changeTo(previousStatus)}>
-            <ChevronLeft className="size-3.5" />
-            Voltar para {BUDGET_STATUS_CONFIG[previousStatus].label}
-          </Button>
-        )}
-        {nextStatus && (
-          <Button type="button" size="sm" variant="secondary" disabled={isPending} onClick={() => changeTo(nextStatus)}>
-            Avançar para {BUDGET_STATUS_CONFIG[nextStatus].label}
-          </Button>
-        )}
-      </div>
+      {(previousStatus || nextStatus) && (
+        <div className="flex flex-col gap-2 sm:flex-row">
+          {previousStatus && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="w-full sm:w-auto"
+              disabled={isPending}
+              onClick={() => changeTo(previousStatus)}
+            >
+              <ChevronLeft className="size-3.5" />
+              Voltar para {BUDGET_STATUS_CONFIG[previousStatus].label}
+            </Button>
+          )}
+          {nextStatus && (
+            <Button
+              type="button"
+              size="sm"
+              className="w-full sm:w-auto"
+              disabled={isPending}
+              onClick={() => changeTo(nextStatus)}
+            >
+              Avançar para {BUDGET_STATUS_CONFIG[nextStatus].label}
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

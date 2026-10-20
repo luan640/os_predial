@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState, useTransition } from "react";
 import { Loader2, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +66,7 @@ function NewMaterialInlineForm({
   useEffect(() => {
     if (state?.material) {
       onCreated(state.material);
+      toast.success("Material criado.");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to the action result
   }, [state]);

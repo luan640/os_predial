@@ -18,6 +18,7 @@ export function CurrencyInput({
   name,
   label,
   labelClassName,
+  inputClassName,
   defaultValue = 0,
   required,
   placeholder = "R$ 0,00",
@@ -26,6 +27,7 @@ export function CurrencyInput({
   name: string;
   label?: string;
   labelClassName?: string;
+  inputClassName?: string;
   defaultValue?: number | null;
   required?: boolean;
   placeholder?: string;
@@ -43,6 +45,7 @@ export function CurrencyInput({
       )}
       <Input
         id={inputId}
+        className={inputClassName}
         inputMode="numeric"
         autoComplete="off"
         placeholder={placeholder}

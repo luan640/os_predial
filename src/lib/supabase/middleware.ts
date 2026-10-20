@@ -43,7 +43,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && (path === "/login" || path === "/signup")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/orcamentos";
     return NextResponse.redirect(url);
   }
 
@@ -62,7 +62,7 @@ export async function updateSession(request: NextRequest) {
 
     if (company && isOnboardingPath) {
       const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
+      url.pathname = "/orcamentos";
       return NextResponse.redirect(url);
     }
   }

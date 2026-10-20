@@ -75,7 +75,7 @@ export async function createBudgetAction(formData: FormData) {
   }
 
   revalidatePath("/orcamentos");
-  redirect(`/orcamentos/${data.id}`);
+  redirect(`/orcamentos/${data.id}?message=${encodeURIComponent("Orçamento criado.")}`);
 }
 
 export async function updateBudgetAction(budgetId: string, formData: FormData) {
@@ -125,10 +125,12 @@ export async function updateBudgetObjetivoAction(budgetId: string, formData: For
 
 export async function updateBudgetStatusAction(budgetId: string, formData: FormData) {
   const status = formData.get("status");
+  const tab = formData.get("tab");
+  const tabParam = typeof tab === "string" && tab ? `tab=${encodeURIComponent(tab)}&` : "";
   const parsed = z.enum(BUDGET_STATUS).safeParse(status);
 
   if (!parsed.success) {
-    redirect(`/orcamentos/${budgetId}?error=${encodeURIComponent("Status inválido.")}`);
+    redirect(`/orcamentos/${budgetId}?${tabParam}error=${encodeURIComponent("Status inválido.")}`);
   }
 
   const supabase = await createClient();
@@ -141,14 +143,14 @@ export async function updateBudgetStatusAction(budgetId: string, formData: FormD
   const { error } = await supabase.from("budgets").update(updates).eq("id", budgetId);
 
   if (error) {
-    redirect(`/orcamentos/${budgetId}?error=${encodeURIComponent(error.message)}`);
+    redirect(`/orcamentos/${budgetId}?${tabParam}error=${encodeURIComponent(error.message)}`);
   }
 
   await supabase.from("budget_status_history").insert({ budget_id: budgetId, status: parsed.data });
 
   revalidatePath("/orcamentos");
   revalidatePath(`/orcamentos/${budgetId}`);
-  redirect(`/orcamentos/${budgetId}`);
+  redirect(`/orcamentos/${budgetId}?${tabParam}message=${encodeURIComponent("Status atualizado.")}`);
 }
 
 export async function deleteBudgetAction(budgetId: string) {
@@ -160,5 +162,5 @@ export async function deleteBudgetAction(budgetId: string) {
   }
 
   revalidatePath("/orcamentos");
-  redirect("/orcamentos");
+  redirect(`/orcamentos?message=${encodeURIComponent("Orçamento excluído.")}`);
 }

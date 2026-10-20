@@ -27,9 +27,7 @@ export function PhotosTab({
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <AddPhotoGroupDialog createAction={createGroupAction} defaultOpen={defaultOpen} error={error} />
-      </div>
+      <AddPhotoGroupDialog createAction={createGroupAction} defaultOpen={defaultOpen} error={error} />
 
       {groups.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

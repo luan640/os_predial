@@ -24,17 +24,23 @@ import {
   type BudgetStatus,
 } from "@/lib/budget-status";
 import { NewBudgetSheet } from "@/components/budgets/new-budget-sheet";
-import { BudgetStatusFilter } from "@/components/budgets/budget-status-filter";
+import { BudgetFiltersSheet } from "@/components/budgets/budget-filters-sheet";
+import { getBudgetSortOption } from "@/lib/budget-sort";
+
+function sanitizeOrTerm(value: string) {
+  return value.replace(/[,()]/g, "");
+}
 
 export default async function OrcamentosPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; status?: string; novo?: string; error?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; sort?: string; novo?: string; error?: string }>;
 }) {
-  const { q, status, novo, error } = await searchParams;
+  const { q, status, sort, novo, error } = await searchParams;
   const selectedStatuses = (status ?? "")
     .split(",")
     .filter((s): s is BudgetStatus => (BUDGET_STATUS as readonly string[]).includes(s));
+  const sortOption = getBudgetSortOption(sort);
 
   const supabase = await createClient();
   const {
@@ -48,14 +54,26 @@ export default async function OrcamentosPage({
     .from("budgets")
     .select("id, titulo, numero, status, valor_total, data_previsao_entrega, clients(nome)")
     .eq("company_id", companyId)
-    .order("created_at", { ascending: false });
+    .order(sortOption.column, { ascending: sortOption.ascending });
 
   if (selectedStatuses.length > 0) {
     query = query.in("status", selectedStatuses);
   }
 
   if (q) {
-    query = query.ilike("titulo", `%${q}%`);
+    const term = sanitizeOrTerm(q);
+    const { data: matchedClients } = await supabase
+      .from("clients")
+      .select("id")
+      .eq("company_id", companyId)
+      .ilike("nome", `%${term}%`);
+    const clientIds = (matchedClients ?? []).map((c) => c.id);
+
+    const orParts = [`titulo.ilike.%${term}%`, `numero.ilike.%${term}%`];
+    if (clientIds.length > 0) {
+      orParts.push(`client_id.in.(${clientIds.join(",")})`);
+    }
+    query = query.or(orParts.join(","));
   }
 
   const [{ data: budgets }, { data: clients }, nextNumero] = await Promise.all([
@@ -79,18 +97,19 @@ export default async function OrcamentosPage({
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <form className="relative max-w-sm flex-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <form className="relative flex-1 sm:max-w-sm">
           {status && <input type="hidden" name="status" value={status} />}
+          {sort && <input type="hidden" name="sort" value={sort} />}
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             name="q"
             defaultValue={q ?? ""}
-            placeholder="Buscar por título..."
-            className="pl-9"
+            placeholder="Buscar por título ou cliente..."
+            className="h-11 pl-9 sm:h-8"
           />
         </form>
-        <BudgetStatusFilter selected={selectedStatuses} />
+        <BudgetFiltersSheet selectedStatuses={selectedStatuses} sort={sortOption.value} />
       </div>
 
       <div className="hidden overflow-hidden rounded-lg border border-border bg-card md:block">

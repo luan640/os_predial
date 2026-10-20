@@ -1,7 +1,6 @@
 import { Camera, Target } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { ObjetivoForm } from "@/components/budgets/objetivo-form";
 import { PhotosTab } from "@/components/budgets/photos-tab";
 
 type PhotoGroup = {
@@ -38,32 +37,25 @@ export function ObjetivoTab({
     <div className="flex flex-col gap-6">
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Target className="size-4 text-muted-foreground" />
+          <CardTitle className="flex items-center gap-2.5 text-base">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Target className="size-4" />
+            </span>
             Objetivo
           </CardTitle>
           <CardDescription>O que esse serviço pretende resolver. Vira o tópico 1 do relatório.</CardDescription>
         </CardHeader>
         <CardContent>
-          {message && <p className="mb-3 text-sm text-[color:var(--chart-2)]">{message}</p>}
-          <form action={updateObjetivoAction} className="flex flex-col gap-3">
-            <Textarea
-              name="descricao"
-              rows={4}
-              placeholder="Ex: Corrigir os trechos danificados da parede e recuperar o acabamento da superfície."
-              defaultValue={descricao ?? ""}
-            />
-            <Button type="submit" variant="secondary" className="w-fit self-end">
-              Salvar objetivo
-            </Button>
-          </form>
+          <ObjetivoForm action={updateObjetivoAction} descricao={descricao} message={message} />
         </CardContent>
       </Card>
 
       <div className="flex flex-col gap-3">
-        <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-          <Camera className="size-4 text-muted-foreground" />
-          Fotos do estado atual
+        <p className="flex items-center gap-2.5 text-sm font-medium text-foreground">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Camera className="size-4" />
+          </span>
+          Registros fotográficos
         </p>
         <PhotosTab
           groups={photoGroups}

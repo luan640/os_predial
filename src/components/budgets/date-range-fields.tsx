@@ -22,6 +22,7 @@ export function DateRangeFields({
           id="data_inicio"
           name="data_inicio"
           type="date"
+          className="h-11 md:h-8"
           value={dataInicio}
           max={dataPrevisaoEntrega || undefined}
           onChange={(e) => setDataInicio(e.target.value)}
@@ -33,6 +34,7 @@ export function DateRangeFields({
           id="data_previsao_entrega"
           name="data_previsao_entrega"
           type="date"
+          className="h-11 md:h-8"
           value={dataPrevisaoEntrega}
           min={dataInicio || undefined}
           onChange={(e) => setDataPrevisaoEntrega(e.target.value)}
