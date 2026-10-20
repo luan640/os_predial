@@ -32,6 +32,8 @@ type BudgetFormValues = {
   data_previsao_entrega?: string | null;
   prazo_qtd?: number | null;
   prazo_unidade?: string | null;
+  numero_pedido?: number | null;
+  numero_nota?: number | null;
 };
 
 export function BudgetForm({
@@ -103,6 +105,37 @@ export function BudgetForm({
           inputClassName="h-11 md:h-8"
           defaultValue={defaultValues?.valor_total}
         />
+      </div>
+
+      <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="numero_pedido">Nº do pedido</Label>
+          <Input
+            id="numero_pedido"
+            name="numero_pedido"
+            type="number"
+            inputMode="numeric"
+            min="1"
+            step="1"
+            placeholder="Ex: 10234"
+            className="h-11 md:h-8"
+            defaultValue={defaultValues?.numero_pedido ?? ""}
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="numero_nota">Nº da nota</Label>
+          <Input
+            id="numero_nota"
+            name="numero_nota"
+            type="number"
+            inputMode="numeric"
+            min="1"
+            step="1"
+            placeholder="Ex: 5021"
+            className="h-11 md:h-8"
+            defaultValue={defaultValues?.numero_nota ?? ""}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">

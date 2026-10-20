@@ -17,6 +17,8 @@ const budgetSchema = z
     data_previsao_entrega: z.string().optional(),
     prazo_qtd: z.coerce.number().int().positive().optional(),
     prazo_unidade: z.enum(["hora", "dia", "semana", "mes"]).optional(),
+    numero_pedido: z.coerce.number().int().positive("Nº do pedido deve ser numérico.").optional(),
+    numero_nota: z.coerce.number().int().positive("Nº da nota deve ser numérico.").optional(),
   })
   .refine(
     (data) => !data.data_inicio || !data.data_previsao_entrega || data.data_inicio <= data.data_previsao_entrega,
@@ -35,7 +37,19 @@ function parseBudgetForm(formData: FormData) {
     data_previsao_entrega: formData.get("data_previsao_entrega") || undefined,
     prazo_qtd: formData.get("prazo_qtd") || undefined,
     prazo_unidade: formData.get("prazo_unidade") || undefined,
+    numero_pedido: formData.get("numero_pedido") || undefined,
+    numero_nota: formData.get("numero_nota") || undefined,
   });
+}
+
+function friendlyBudgetSaveError(message: string) {
+  if (message.includes("budgets_company_numero_pedido_unique")) {
+    return "Esse número de pedido já está em uso em outro orçamento.";
+  }
+  if (message.includes("budgets_company_numero_nota_unique")) {
+    return "Esse número de nota já está em uso em outro orçamento.";
+  }
+  return message;
 }
 
 export async function createBudgetAction(formData: FormData) {
@@ -66,12 +80,15 @@ export async function createBudgetAction(formData: FormData) {
       data_previsao_entrega: parsed.data.data_previsao_entrega || null,
       prazo_qtd: parsed.data.prazo_qtd || 1,
       prazo_unidade: parsed.data.prazo_unidade || "dia",
+      numero_pedido: parsed.data.numero_pedido || null,
+      numero_nota: parsed.data.numero_nota || null,
     })
     .select("id")
     .single();
 
   if (error || !data) {
-    redirect(`/orcamentos?novo=1&error=${encodeURIComponent(error?.message ?? "Erro ao criar orçamento.")}`);
+    const message = friendlyBudgetSaveError(error?.message ?? "Erro ao criar orçamento.");
+    redirect(`/orcamentos?novo=1&error=${encodeURIComponent(message)}`);
   }
 
   revalidatePath("/orcamentos");
@@ -97,11 +114,13 @@ export async function updateBudgetAction(budgetId: string, formData: FormData) {
       data_previsao_entrega: parsed.data.data_previsao_entrega || null,
       prazo_qtd: parsed.data.prazo_qtd || 1,
       prazo_unidade: parsed.data.prazo_unidade || "dia",
+      numero_pedido: parsed.data.numero_pedido || null,
+      numero_nota: parsed.data.numero_nota || null,
     })
     .eq("id", budgetId);
 
   if (error) {
-    redirect(`/orcamentos/${budgetId}?error=${encodeURIComponent(error.message)}`);
+    redirect(`/orcamentos/${budgetId}?error=${encodeURIComponent(friendlyBudgetSaveError(error.message))}`);
   }
 
   revalidatePath("/orcamentos");

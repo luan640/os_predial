@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  allowedDevOrigins: ["environment-induction-importance-ethical.trycloudflare.com"],
+  allowedDevOrigins: ["sydney-vacation-determination-luke.trycloudflare.com"],
   experimental: {
     serverActions: {
       bodySizeLimit: "20mb",
