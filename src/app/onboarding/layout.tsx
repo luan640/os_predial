@@ -7,7 +7,7 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
         <span className="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
           <Building2 className="size-5" />
         </span>
-        <span className="text-lg font-semibold tracking-tight">ObraCerta</span>
+        <span className="text-lg font-semibold tracking-tight">PredSimples</span>
       </div>
       <div className="w-full max-w-md">{children}</div>
     </div>

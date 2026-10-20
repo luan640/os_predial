@@ -19,7 +19,7 @@ export function AppSidebar() {
         <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
           <Building2 className="size-4" />
         </span>
-        <span className="text-base font-semibold tracking-tight">ObraCerta</span>
+        <span className="text-base font-semibold tracking-tight">PredSimples</span>
       </div>
       <div className="w-64">
         <AppSidebarNav />

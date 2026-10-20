@@ -20,7 +20,7 @@ export function MobileNav() {
           <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <Building2 className="size-4" />
           </span>
-          ObraCerta
+          PredSimples
         </SheetTitle>
         <AppSidebarNav onNavigate={() => setOpen(false)} />
       </SheetContent>

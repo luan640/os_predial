@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <span className="flex size-9 items-center justify-center rounded-md bg-primary text-primary-foreground">
           <Building2 className="size-5" />
         </span>
-        <span className="text-lg font-semibold tracking-tight">ObraCerta</span>
+        <span className="text-lg font-semibold tracking-tight">PredSimples</span>
       </div>
       <div className="w-full max-w-sm">{children}</div>
     </div>

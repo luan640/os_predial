@@ -10,7 +10,7 @@ const plexSans = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "ObraCerta — Gestão de orçamentos de obra",
+  title: "PredSimples — Gestão de orçamentos de obra",
   description:
     "Cadastre clientes, monte orçamentos e acompanhe o andamento das suas obras.",
 };
