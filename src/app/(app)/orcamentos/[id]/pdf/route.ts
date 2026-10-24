@@ -37,15 +37,21 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Orçamento não encontrado." }, { status: 404 });
   }
 
-  const [{ data: items }, { data: scopeItems }, { data: photoGroupRows }] = await Promise.all([
-    supabase
-      .from("budget_items")
-      .select("tipo, descricao, quantidade, unidade, valor_unitario, valor_total")
-      .eq("budget_id", budgetId)
-      .order("created_at"),
-    supabase.from("budget_scope_items").select("descricao").eq("budget_id", budgetId).order("ordem"),
-    supabase.from("budget_photo_groups").select("id, titulo").eq("budget_id", budgetId).order("created_at"),
-  ]);
+  const [{ data: items }, { data: scopeItems }, { data: photoGroupRows }, { data: orcamentoItems }] =
+    await Promise.all([
+      supabase
+        .from("budget_items")
+        .select("tipo, descricao, quantidade, unidade, valor_unitario, valor_total")
+        .eq("budget_id", budgetId)
+        .order("created_at"),
+      supabase.from("budget_scope_items").select("descricao").eq("budget_id", budgetId).order("ordem"),
+      supabase.from("budget_photo_groups").select("id, titulo").eq("budget_id", budgetId).order("created_at"),
+      supabase
+        .from("budget_orcamento_items")
+        .select("servico, quantidade, valor_unitario, valor_total")
+        .eq("budget_id", budgetId)
+        .order("ordem"),
+    ]);
 
   const groupIds = (photoGroupRows ?? []).map((g) => g.id);
   const { data: photoRows } = groupIds.length
@@ -57,7 +63,24 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     photos: (photoRows ?? []).filter((p) => p.group_id === group.id).map((p) => ({ photo_url: p.photo_url })),
   }));
 
-  const pricedItems = (items ?? []).filter((i) => i.tipo !== "material");
+  const pricedItems = [
+    ...(items ?? [])
+      .filter((i) => i.tipo !== "material")
+      .map((i) => ({
+        descricao: i.descricao,
+        quantidade: i.quantidade,
+        unidade: i.unidade,
+        valor_unitario: i.valor_unitario,
+        valor_total: i.valor_total,
+      })),
+    ...(orcamentoItems ?? []).map((i) => ({
+      descricao: i.servico,
+      quantidade: i.quantidade,
+      unidade: null,
+      valor_unitario: i.valor_unitario,
+      valor_total: i.valor_total,
+    })),
+  ];
   const materiaisLines = (items ?? [])
     .filter((i) => i.tipo === "material")
     .map((i) => `${i.descricao}${i.unidade ? `; ${i.quantidade} ${i.unidade}` : `; ${i.quantidade}`}`);

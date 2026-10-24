@@ -138,6 +138,23 @@ export async function updateBudgetObjetivoAction(budgetId: string, formData: For
     redirect(`/orcamentos/${budgetId}?tab=objetivo&error=${encodeURIComponent(error.message)}`);
   }
 
+  if (descricao) {
+    const { count } = await supabase
+      .from("budget_orcamento_items")
+      .select("id", { count: "exact", head: true })
+      .eq("budget_id", budgetId);
+
+    if (!count) {
+      await supabase.from("budget_orcamento_items").insert({
+        budget_id: budgetId,
+        servico: `SERVIÇO DE ENGENHARIA - ${descricao}`,
+        quantidade: 1,
+        valor_unitario: 0,
+        ordem: 0,
+      });
+    }
+  }
+
   revalidatePath(`/orcamentos/${budgetId}`);
   redirect(`/orcamentos/${budgetId}?tab=objetivo&message=${encodeURIComponent("Objetivo atualizado.")}`);
 }

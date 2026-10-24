@@ -43,7 +43,15 @@ const styles = StyleSheet.create({
   paymentBox: { marginTop: 10, borderWidth: 1, borderColor: "#dad6cd", borderRadius: 3, padding: 8 },
   paymentTitle: { fontFamily: "Helvetica-Bold", fontSize: 9, marginBottom: 4 },
   signatureRow: { flexDirection: "row", gap: 16, marginTop: 28 },
-  signatureBox: { flex: 1, borderWidth: 1, borderColor: "#1b2430", padding: 8, textAlign: "center", fontFamily: "Helvetica-Bold" },
+  signatureBox: {
+    flex: 1,
+    borderTopWidth: 1,
+    borderColor: "#1b2430",
+    marginTop: 40,
+    paddingTop: 6,
+    textAlign: "center",
+    fontFamily: "Helvetica-Bold",
+  },
   responsavel: { marginTop: 16, textAlign: "center" },
   responsavelNome: { fontFamily: "Helvetica-Bold" },
   validity: { marginTop: 16, fontSize: 9, color: "#6f6b63" },
@@ -215,7 +223,7 @@ export function ReportDocument({
                 <Text style={[styles.td, styles.colComp]}>{`1.${index + 1}`}</Text>
                 <Text style={[styles.td, styles.colServico]}>
                   {item.descricao}
-                  {item.unidade ? ` (${item.quantidade} ${item.unidade})` : ` (${item.quantidade})`}
+                  {item.unidade ? ` (${item.unidade})` : ""}
                 </Text>
                 <Text style={[styles.td, styles.colQtd]}>{item.quantidade}</Text>
                 <Text style={[styles.td, styles.colUnit]}>{formatCurrency(item.valor_unitario)}</Text>
@@ -235,10 +243,13 @@ export function ReportDocument({
 
         <View style={styles.paymentBox}>
           <Text style={styles.paymentTitle}>
-            VALOR TOTAL DA PROPOSTA: {formatCurrency(budget.valor_total || itemsTotal)}
+            VALOR TOTAL DA PROPOSTA: {formatCurrency(budget.valor_total)}
           </Text>
           <Paragraph text={company.relatorio_condicoes_pagamento_padrao} />
           <Text style={styles.paragraph}>Prazo de entrega: {formatDateShort(budget.data_previsao_entrega)}</Text>
+          <Text style={styles.paragraph}>
+            O custo da refeição relacionados à equipe executante será de responsabilidade da contratante.
+          </Text>
         </View>
 
         <Text style={styles.sectionTitle}>7. CONSIDERAÇÕES FINAIS</Text>

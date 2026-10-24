@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { Building2, Clock3, Download, LayoutGrid, ListChecks, Package, Phone, Target } from "lucide-react";
+import { Building2, Calculator, Clock3, Download, LayoutGrid, ListChecks, Package, Phone, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ import { BudgetKpiCards } from "@/components/budgets/budget-kpi-cards";
 import { ClientMiniCard } from "@/components/budgets/client-mini-card";
 import { BudgetForm } from "@/components/budgets/budget-form";
 import { ItemsTab } from "@/components/budgets/items-tab";
+import { OrcamentoTab } from "@/components/budgets/orcamento-tab";
 import { ObjetivoTab } from "@/components/budgets/objetivo-tab";
 import { ScopeTab } from "@/components/budgets/scope-tab";
 import {
@@ -30,6 +31,11 @@ import {
   deleteBudgetAction,
 } from "@/lib/actions/budgets";
 import { createBudgetItemAction, deleteBudgetItemAction } from "@/lib/actions/budget-items";
+import {
+  createOrcamentoItemAction,
+  updateOrcamentoItemAction,
+  deleteOrcamentoItemAction,
+} from "@/lib/actions/orcamento-items";
 import {
   createPhotoGroupAction,
   addPhotosToGroupAction,
@@ -70,18 +76,29 @@ export default async function OrcamentoDetailPage({
 
   const client = Array.isArray(budget.clients) ? budget.clients[0] : budget.clients;
 
-  const [{ data: clients }, { data: items }, { data: scopeItems }, { data: materials }, { data: statusHistory }] =
-    await Promise.all([
-      supabase.from("clients").select("id, nome").eq("company_id", companyId).order("nome"),
-      supabase.from("budget_items").select("*").eq("budget_id", id).order("created_at"),
-      supabase.from("budget_scope_items").select("id, descricao").eq("budget_id", id).order("ordem"),
-      supabase.from("materials").select("id, nome, unidade").eq("company_id", companyId).order("nome"),
-      supabase
-        .from("budget_status_history")
-        .select("id, status, changed_at")
-        .eq("budget_id", id)
-        .order("changed_at", { ascending: false }),
-    ]);
+  const [
+    { data: clients },
+    { data: items },
+    { data: scopeItems },
+    { data: materials },
+    { data: statusHistory },
+    { data: orcamentoItems },
+  ] = await Promise.all([
+    supabase.from("clients").select("id, nome").eq("company_id", companyId).order("nome"),
+    supabase.from("budget_items").select("*").eq("budget_id", id).order("created_at"),
+    supabase.from("budget_scope_items").select("id, descricao").eq("budget_id", id).order("ordem"),
+    supabase.from("materials").select("id, nome, unidade").eq("company_id", companyId).order("nome"),
+    supabase
+      .from("budget_status_history")
+      .select("id, status, changed_at")
+      .eq("budget_id", id)
+      .order("changed_at", { ascending: false }),
+    supabase
+      .from("budget_orcamento_items")
+      .select("id, servico, quantidade, valor_unitario, valor_total")
+      .eq("budget_id", id)
+      .order("ordem"),
+  ]);
 
   const { data: photoGroups } = await supabase
     .from("budget_photo_groups")
@@ -121,6 +138,9 @@ export default async function OrcamentoDetailPage({
   const createScopeItemWithId = createScopeItemAction.bind(null, id);
   const updateScopeItemWithId = updateScopeItemAction.bind(null, id);
   const deleteScopeItemWithId = deleteScopeItemAction.bind(null, id);
+  const createOrcamentoItemWithId = createOrcamentoItemAction.bind(null, id);
+  const updateOrcamentoItemWithId = updateOrcamentoItemAction.bind(null, id);
+  const deleteOrcamentoItemWithId = deleteOrcamentoItemAction.bind(null, id);
 
   const updatedAt = formatRelativeDateTime(budget.updated_at);
 
@@ -212,6 +232,10 @@ export default async function OrcamentoDetailPage({
             <Package className="size-4" />
             Itens
           </TabsTrigger>
+          <TabsTrigger value="orcamento">
+            <Calculator className="size-4" />
+            Orçamento
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="visao-geral" className="mt-4">
@@ -282,6 +306,16 @@ export default async function OrcamentoDetailPage({
             createAction={createItemWithId}
             deleteAction={deleteItemWithId}
             error={tab === "itens" ? error : undefined}
+          />
+        </TabsContent>
+
+        <TabsContent value="orcamento" className="mt-4">
+          <OrcamentoTab
+            items={orcamentoItems ?? []}
+            createAction={createOrcamentoItemWithId}
+            updateAction={updateOrcamentoItemWithId}
+            deleteAction={deleteOrcamentoItemWithId}
+            error={tab === "orcamento" ? error : undefined}
           />
         </TabsContent>
       </Tabs>

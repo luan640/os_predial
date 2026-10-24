@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CurrencyInput } from "@/components/ui/currency-input";
 import {
   Dialog,
   DialogContent,
@@ -254,8 +253,6 @@ export function AddItemDialog({
           />
         </div>
       </div>
-
-      <CurrencyInput id="valor_unitario" name="valor_unitario" label="Valor unit." labelClassName="text-xs" required />
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
